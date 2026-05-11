@@ -22,41 +22,7 @@ public class Juego {
         altoMando = new ArrayList<>();
         sc = new Scanner(System.in);
     }
-    
-    public void menuInicial(String rutaRegistros) throws IOException {
-        while (true) {
-            System.out.println("\n1) Continuar.");
-            System.out.println("2) Nueva Partida.");
-            System.out.println("3) Salir.");
-            int op = leerOpcion();
-            switch (op) {
-                case 1:
-                    boolean cargado = cargarRegistros(rutaRegistros);
-                    if (!cargado || nombreJugador == null || nombreJugador.isEmpty()) {
-                        System.out.println("No se encontro una partida guardada. Inicie una nueva.");
-                    } else {
-                        System.out.println("Bienvenido de nuevo " + nombreJugador + "!!");
-                        menuPrincipal(rutaRegistros);
-                    }
-                    break;
-                case 2:
-                    System.out.print("Ingrese Apodo: ");
-                    nombreJugador = sc.nextLine().trim();
-                    medallas = "none";
-                    pokemonsJugador.clear();
-     
-                    for (Gimnasio g : gimnasios) g.setEstado("Sin derrotar");
-                    System.out.println("Bienvenido " + nombreJugador + "!!");
-                    menuPrincipal(rutaRegistros);
-                    break;
-                case 3:
-                    System.out.println("Hasta luego!");
-                    return;
-                default:
-                    System.out.println("Opcion invalida.");
-            }
-        }
-    }
+ 
     public void cargarPokedex(String ruta) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(ruta));
         String linea;
@@ -106,7 +72,7 @@ public class Juego {
             String[] p = linea.split(";");
             ArrayList<String> poks = new ArrayList<>();
             for (int i = 2; i < p.length; i++) poks.add(p[i]);
-            altoMando.add(new AltoMando(Integer.parseInt(p[0]), p[1], poks));
+            altoMando.add(new altoMando(Integer.parseInt(p[0]), p[1], poks));
         }
         br.close();
     }
@@ -168,6 +134,83 @@ public class Juego {
         }
         bw.close();
         System.out.println("Partida guardada correctamente.");
+    }
+ 
+    private Pokemon buscarEnPokedex(String nombre) {
+        for (Pokemon pk : pokedex) {
+            if (pk.getNombre().equalsIgnoreCase(nombre)) return pk;
+        }
+        return null;
+    }
+ 
+    private Pokemon clonarPokemon(Pokemon p) {
+        return new Pokemon(p.getNombre(), p.getHabitat(), p.getPorcentajeAparicion(),
+                p.getVida(), p.getAtaque(), p.getDefensa(),
+                p.getAtaqueEspecial(), p.getDefensaEspecial(), p.getVelocidad(), p.getTipo());
+    }
+ 
+    private ArrayList<Pokemon> getEquipo() {
+        ArrayList<Pokemon> equipo = new ArrayList<>();
+        for (int i = 0; i < Math.min(6, pokemonsJugador.size()); i++) {
+            equipo.add(pokemonsJugador.get(i));
+        }
+        return equipo;
+    }
+ 
+    private Pokemon getPokemonActivoEquipo() {
+        for (Pokemon pk : getEquipo()) {
+            if (pk.getEstado().equals("Vivo")) return pk;
+        }
+        return null;
+    }
+ 
+    private boolean equipoSinVida() {
+        return getPokemonActivoEquipo() == null;
+    }
+ 
+    private int leerOpcion() {
+        while (true) {
+            System.out.print("Ingrese Opcion: ");
+            try {
+                return Integer.parseInt(sc.nextLine().trim());
+            } catch (NumberFormatException e) {
+                System.out.println("Opcion invalida. Intente de nuevo.");
+            }
+        }
+    }
+ 
+    public void menuInicial(String rutaRegistros) throws IOException {
+        while (true) {
+            System.out.println("\n1) Continuar.");
+            System.out.println("2) Nueva Partida.");
+            System.out.println("3) Salir.");
+            int op = leerOpcion();
+            switch (op) {
+                case 1:
+                    boolean cargado = cargarRegistros(rutaRegistros);
+                    if (!cargado || nombreJugador == null || nombreJugador.isEmpty()) {
+                        System.out.println("No se encontro una partida guardada. Inicie una nueva.");
+                    } else {
+                        System.out.println("Bienvenido de nuevo " + nombreJugador + "!!");
+                        menuPrincipal(rutaRegistros);
+                    }
+                    break;
+                case 2:
+                    System.out.print("Ingrese Apodo: ");
+                    nombreJugador = sc.nextLine().trim();
+                    medallas = "none";
+                    pokemonsJugador.clear();
+                    for (Gimnasio g : gimnasios) g.setEstado("Sin derrotar");
+                    System.out.println("Bienvenido " + nombreJugador + "!!");
+                    menuPrincipal(rutaRegistros);
+                    break;
+                case 3:
+                    System.out.println("Hasta luego!");
+                    return;
+                default:
+                    System.out.println("Opcion invalida.");
+            }
+        }
     }
  
     public void menuPrincipal(String rutaRegistros) throws IOException {
